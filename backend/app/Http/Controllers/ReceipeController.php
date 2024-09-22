@@ -13,18 +13,20 @@ class ReceipeController extends Controller
      */
     public function index()
     {
+        /**
+         * get all receipes and filter by category
+         * GET- /api/receipes
+         * @param category
+         */
         try{
-
-
-            return Receipe::paginate(6);
-
+            
+            return Receipe::filter(request(['category']))->paginate(6);
 
         }catch(Exception $e){
-            return [
-
+            return response()->json([
                 'message'=>$e->getMessage(),
-                'status'=>404
-            ];
+                'status'=>500
+            ], 500);
         }
     }
 
