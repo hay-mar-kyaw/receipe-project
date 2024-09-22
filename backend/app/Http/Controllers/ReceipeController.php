@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Receipe;
+use Exception;
 use Illuminate\Http\Request;
 
 class ReceipeController extends Controller
@@ -12,7 +13,19 @@ class ReceipeController extends Controller
      */
     public function index()
     {
-        return Receipe::all();
+        try{
+
+
+            return Receipe::paginate(6);
+
+
+        }catch(Exception $e){
+            return [
+
+                'message'=>$e->getMessage(),
+                'status'=>404
+            ];
+        }
     }
 
     /**
