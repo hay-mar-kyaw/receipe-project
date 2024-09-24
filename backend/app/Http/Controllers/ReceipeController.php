@@ -8,18 +8,16 @@ use Illuminate\Http\Request;
 
 class ReceipeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        /**
+         /**
          * get all receipes and filter by category
          * GET- /api/receipes
          * @param category
          */
+    public function index()
+    {
+
         try{
-            
+
             return Receipe::filter(request(['category']))->paginate(6);
 
         }catch(Exception $e){
@@ -47,11 +45,28 @@ class ReceipeController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Get a receipe.
+     * GET - api/receipes/:id
      */
-    public function show(Receipe $receipe)
+    public function show($id)
     {
-        //
+        try{
+                $receipe=Receipe::find($id);
+                if(!$receipe){
+                    return response()->json([
+                        'message'=>'receipe not found',
+                        'status'=>404
+                    ],404);
+                }
+                return $receipe;
+
+
+        }catch(Exception $e){
+            return response()->json([
+                'message'=>$e->getMessage(),
+                'status'=>500
+            ], 500);
+        }
     }
 
     /**
