@@ -30,15 +30,7 @@ class ReceipeController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
+     /**
      * Store a newly created resource in storage.
      * POST - api/receipes
      * @param title, description, category_id, photo
@@ -119,9 +111,52 @@ class ReceipeController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Receipe $receipe)
+    public function update($id)
     {
-        //
+        try{
+
+            $receipe=Receipe::find($id);
+                if(!$receipe){
+                    return response()->json([
+                        'message'=>'receipe not found',
+                        'status'=>404
+                    ],404);
+                }
+
+
+            //validate
+            $validator=Validator::make(request()->all(),[
+                'title'=>'required',
+                'description'=>'required',
+                'category_id'=>['required',Rule::exists('categories','id')],
+                'image'=>'required'
+            ]);
+            // if validation fail
+
+            if($validator->fails()){
+                $flatteredErrors = collect($validator->errors())->flatMap(function ($e, $field){
+                    return [$field => $e[0]];
+                });
+                return response()->json([
+                    'errors'=>$flatteredErrors,
+                    'status'=>400
+                ], 400);
+            }
+
+            //if validation pass
+            $receipe->title=request('title');
+            $receipe->description=request('description');
+            $receipe->image=request('image');
+            $receipe->category_id=request('category_id');
+            $receipe->save();
+
+            return response()->json($receipe, 201);
+        }catch(Exception $e){
+            return response()->json([
+                'message'=>$e->getMessage(),
+                'status'=>500
+            ], 500);
+        }
     }
 
     /**
@@ -147,5 +182,39 @@ class ReceipeController extends Controller
                     'status'=>500
                 ], 500);
             }
+    }
+
+    //upload an image
+    public function upload(){
+        try{
+
+            //validate
+            $validator=Validator::make(request()->all(),[
+                'image'=>['required','image']
+            ]);
+            // if validation fail
+
+            if($validator->fails()){
+                $flatteredErrors = collect($validator->errors())->flatMap(function ($e, $field){
+                    return [$field => $e[0]];
+                });
+                return response()->json([
+                    'errors'=>$flatteredErrors,
+                    'status'=>400
+                ], 400);
+            }
+
+            //if validation pass
+            $path = '/storage/'.request('image')->store('/receipes');
+
+            return response()->json($path, 200);
+
+
+            }catch(Exception $e){
+                return response()->json([
+                    'message'=>$e->getMessage(),
+                    'status'=>500
+                ], 500);
+                }
     }
 }
